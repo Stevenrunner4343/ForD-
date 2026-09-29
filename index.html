@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Даша 💌</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #ffd6e8 0%, #ffe9c7 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden; text-align: center;
+    padding: 20px;
+  }
+  .card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    padding: 36px 28px;
+    box-shadow: 0 20px 60px rgba(255,105,180,0.25);
+    max-width: 420px; width: 100%;
+    position: relative; z-index: 2;
+  }
+  h1 {
+    font-size: 22px; margin: 0 0 8px;
+    color: #d6336c; font-weight: 700;
+  }
+  .sub { color: #a06b8a; font-size: 14px; margin-bottom: 28px; }
+  .btn {
+    display: block; width: 100%;
+    padding: 16px 20px; margin: 12px 0;
+    border: none; border-radius: 16px;
+    font-size: 18px; font-weight: 600;
+    cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .3s;
+    font-family: inherit;
+  }
+  .btn-watermelon {
+    background: linear-gradient(135deg, #ff6b8b, #ff4757);
+    color: white;
+    box-shadow: 0 8px 20px rgba(255,71,87,0.4);
+  }
+  .btn-watermelon:active { transform: scale(0.97); }
+  .btn-cola {
+    background: #2b2b2b; color: #fff;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    transition: all .25s ease-out;
+  }
+  .final { display: none; }
+  .final.show { display: block; animation: pop .5s ease; }
+  @keyframes pop {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .heart { font-size: 60px; margin-bottom: 12px; }
+  .final h2 { color: #d6336c; font-size: 24px; margin: 0 0 10px; }
+  .final p { color: #7a5468; font-size: 16px; line-height: 1.5; margin: 8px 0; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+  <h1>Даша 💌</h1>
+  <p class="sub">Что мне взять с собой сегодня на прогулку?</p>
+
+  <button class="btn btn-watermelon" id="watermelonBtn">🍉 Арбуз</button>
+  <button class="btn btn-cola" id="colaBtn">🥤 Кола Зеро</button>
+</div>
+
+<div class="card final" id="finalCard">
+  <div class="heart">💖</div>
+  <h2 id="finalTitle">Отличный выбор!</h2>
+  <p id="finalText"></p>
+  <p style="font-size:14px; color:#b08aa0; margin-top:20px;">До встречи сегодня 😘</p>
+</div>
+
+<script>
+// ==========================================
+// 📍 ВСТАВЬ СВОЮ ПОЛНУЮ ССЫЛКУ СЮДА 👇
+// Формат: https://api.telegram.org/bot<ТОКЕН>/sendMessage?chat_id=<CHAT_ID>&text=test
+// ==========================================
+const TELEGRAM_URL = 'https://api.telegram.org/bot8798591994:AAFcDqcUqJpGcxICetp9pXyl5ODUbPPFjNM/sendMessage?chat_id=318146958&text=test';
+// ==========================================
+
+// ===== Убегающая кнопка "Кола" (убегает ТОЛЬКО по клику) =====
+const cola = document.getElementById('colaBtn');
+const colaTexts = [
+  '🥤 Кола Зеро',
+  'Или всё таки арбуз?',
+  'Точно колу?',
+  'Арбуз, ммммм 🍉',
+  'Ладно, сдаюсь...',
+];
+let colaIndex = 0;
+let colaCaught = false;
+
+function escapeCola(e) {
+  if (e) e.preventDefault();
+  if (colaCaught) return;
+
+  colaIndex++;
+  const scale = Math.max(0.45, 1 - colaIndex * 0.07);
+  cola.style.transform = `scale(${scale})`;
+  cola.textContent = colaTexts[Math.min(colaIndex, colaTexts.length - 1)];
+
+  // Двигаем в случайную точку в пределах карточки
+  const card = document.getElementById('mainCard');
+  const cardRect = card.getBoundingClientRect();
+  const btnRect = cola.getBoundingClientRect();
+
+  const maxX = Math.max(0, cardRect.width - btnRect.width - 20);
+  const maxY = Math.max(0, cardRect.height - btnRect.height - 20);
+  const newX = (Math.random() * maxX) - maxX / 2;
+  const newY = (Math.random() * maxY) - maxY / 2;
+
+  cola.style.position = 'relative';
+  cola.style.left = newX + 'px';
+  cola.style.top = newY + 'px';
+
+  // Отправляем в телегу клик по коле
+  sendToTelegram('Кола Зеро (пыталась кликнуть, кнопка убежала)');
+
+  // После 9 попыток кнопка пропадает
+  if (colaIndex >= 5) {
+    colaCaught = true;
+    cola.style.opacity = '0';
+    cola.style.pointerEvents = 'none';
+  }
+}
+
+// Кола убегает ТОЛЬКО по клику
+cola.addEventListener('click', escapeCola);
+
+// ===== Отправка в Telegram =====
+function sendToTelegram(choice) {
+  if (!TELEGRAM_URL || TELEGRAM_URL === 'https://api.telegram.org/bot8798591994:AAFcDqcUqJpGcxICetp9pXyl5ODUbPPFjNM/sendMessage?chat_id=318146958&text=test') {
+    console.log('Telegram не настроен. Событие:', choice);
+    return;
+  }
+
+  // Подставляем текст вместо &text=... в конце ссылки
+  const text = `Даша: ${choice} 🍉🥤`;
+  const baseUrl = TELEGRAM_URL.split('&text=')[0];
+  const url = `${baseUrl}&text=${encodeURIComponent(text)}`;
+
+  fetch(url, { mode: 'no-cors' }).catch(() => {});
+}
+
+// ===== Финальный экран =====
+function showFinal(choice) {
+  document.getElementById('mainCard').classList.add('hidden');
+  const finalCard = document.getElementById('finalCard');
+  finalCard.classList.add('show');
+
+  if (choice === 'Арбуз') {
+    document.getElementById('finalTitle').textContent = 'Арбуз! 🍉';
+    document.getElementById('finalText').textContent =
+      'Ладно, возьму и колу тоже! 🥤\n\nИ напомни мне, пожалуйста, про книгу, которую я обещал принести! 📚';
+  } else {
+    document.getElementById('finalTitle').textContent = 'Кола Зеро! 🥤';
+    document.getElementById('finalText').textContent =
+      'Ладно, возьму и колу тоже! 🥤\n\nИ напомни мне, пожалуйста, про книгу, которую я обещал принести! 📚';
+  }
+
+  sendToTelegram(choice + ' + напоминание про книгу');
+  confettiHearts();
+}
+
+document.getElementById('watermelonBtn').addEventListener('click', () => {
+  showFinal('Арбуз');
+});
+
+// ===== Конфетти =====
+function confettiHearts() {
+  const emojis = ['💖', '🍉', '✨', '💕', '🥤'];
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement('div');
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.cssText = `
+      position: fixed;
+      left: ${Math.random() * 100}vw;
+      top: -50px;
+      font-size: ${16 + Math.random() * 24}px;
+      pointer-events: none;
+      z-index: 999;
+      transition: transform ${2 + Math.random() * 2}s linear, opacity 3s;
+    `;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => {
+      el.style.transform = `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 720}deg)`;
+      el.style.opacity = '0';
+    });
+    setTimeout(() => el.remove(), 4500);
+  }
+}
+</script>
+</body>
+</html>

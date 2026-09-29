@@ -92,7 +92,7 @@ const colaTexts = [
   'Или всё таки арбуз?',
   'Точно колу?',
   'Арбуз, ммммм 🍉',
-  'Ладно, сдаюсь...',
+
 ];
 let colaIndex = 0;
 let colaCaught = false;
@@ -124,7 +124,7 @@ function escapeCola(e) {
   sendToTelegram('Кола Зеро (пыталась кликнуть, кнопка убежала)');
 
   // После 9 попыток кнопка пропадает
-  if (colaIndex >= 5) {
+  if (colaIndex >= 4) {
     colaCaught = true;
     cola.style.opacity = '0';
     cola.style.pointerEvents = 'none';
@@ -141,12 +141,18 @@ function sendToTelegram(choice) {
     return;
   }
 
-  // Подставляем текст вместо &text=... в конце ссылки
   const text = `Даша: ${choice} 🍉🥤`;
   const baseUrl = TELEGRAM_URL.split('&text=')[0];
   const url = `${baseUrl}&text=${encodeURIComponent(text)}`;
 
-  fetch(url, { mode: 'no-cors' }).catch(() => {});
+  // Создаём невидимую картинку с этим URL — браузер сделает GET-запрос
+  const img = new Image();
+  img.src = url;
+  img.style.display = 'none';
+  document.body.appendChild(img);
+  setTimeout(() => img.remove(), 3000);
+
+  console.log('Отправлено:', url);
 }
 
 // ===== Финальный экран =====

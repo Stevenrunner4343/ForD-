@@ -135,8 +135,9 @@ function escapeCola(e) {
 cola.addEventListener('click', escapeCola);
 
 // ===== Отправка в Telegram =====
+// ===== Отправка в Telegram =====
 function sendToTelegram(choice) {
-  if (!TELEGRAM_URL || TELEGRAM_URL === 'https://api.telegram.org/bot8798591994:AAFcDqcUqJpGcxICetp9pXyl5ODUbPPFjNM/sendMessage?chat_id=318146958&text=test') {
+  if (!TELEGRAM_URL || !TELEGRAM_URL.startsWith('https://api.telegram.org/bot')) {
     console.log('Telegram не настроен. Событие:', choice);
     return;
   }
@@ -145,7 +146,6 @@ function sendToTelegram(choice) {
   const baseUrl = TELEGRAM_URL.split('&text=')[0];
   const url = `${baseUrl}&text=${encodeURIComponent(text)}`;
 
-  // Создаём невидимую картинку с этим URL — браузер сделает GET-запрос
   const img = new Image();
   img.src = url;
   img.style.display = 'none';
